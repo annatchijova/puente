@@ -7,7 +7,7 @@
  *
  * Usage: npx tsx scripts/seed.ts
  * Requires: gcloud application-default credentials for a principal with
- * write access to the puente-hackathon Firestore database.
+ * write access to the puente-hackathon-36b4a Firestore database.
  */
 import { initializeApp, applicationDefault } from "firebase-admin/app";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
@@ -15,7 +15,7 @@ import { createHash } from "node:crypto";
 
 initializeApp({
   credential: applicationDefault(),
-  projectId: "puente-hackathon",
+  projectId: "puente-hackathon-36b4a",
 });
 
 const db = getFirestore();
