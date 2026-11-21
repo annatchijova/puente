@@ -1,10 +1,21 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { Suspense } from "react";
 import { useAuth } from "@/lib/AuthProvider";
 import { useSharedRecord } from "@/lib/useSharedRecord";
+import OrderTracking from "../OrderTracking";
+import TraceableDraft, { demoPatientId, demoDocumentId } from "../TraceableDraft";
 
 export default function PatientRecordPage() {
+  return (
+    <Suspense fallback={<main className="p-8">Loading…</main>}>
+      <PatientRecord />
+    </Suspense>
+  );
+}
+
+function PatientRecord() {
   const { patientId } = useParams<{ patientId: string }>();
   const { user, loading: authLoading } = useAuth();
   const { documents, treatingProfessionals, loading, error } =
@@ -55,10 +66,17 @@ export default function PatientRecordPage() {
                 sealed sha256:{doc.sha256.slice(0, 12)}…
               </p>
               <p className="mt-1">{doc.content}</p>
+              {patientId === demoPatientId && doc.id === demoDocumentId &&
+                treatingProfessionals.some((professional) => professional.professionalId === user.uid) && (
+                  <TraceableDraft key={`${user.uid}:${doc.sha256}`} uid={user.uid} document={doc} />
+                )}
             </li>
           ))}
         </ul>
       </section>
+
+      <OrderTracking key={`${user.uid}:${patientId}`} patientId={patientId} uid={user.uid}
+        canManage={treatingProfessionals.some((professional) => professional.professionalId === user.uid)} />
     </main>
   );
 }

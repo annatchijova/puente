@@ -51,8 +51,43 @@ service cloud.firestore {
       }
 
       match /orders/{orderId} {
+        function validEvent(event) {
+          return event.keys().hasOnly(['at', 'by'])
+            && event.at == request.time && event.by == request.auth.uid;
+        }
+
+        function isNextState(before, after) {
+          return (before == 'requested' && after == 'scheduled')
+            || (before == 'scheduled' && after == 'performed')
+            || (before == 'performed' && after == 'result_received')
+            || (before == 'result_received' && after == 'result_reviewed');
+        }
+
+        function validRequest(data) {
+          return data.keys().hasOnly(['description', 'requestedBy', 'requestedAt', 'state', 'transitions'])
+            && data.description is string
+            && data.description.size() <= 200
+            && data.description.matches('.*[^[:space:]].*')
+            && data.requestedBy == request.auth.uid
+            && data.requestedAt == request.time
+            && data.state == 'requested'
+            && data.transitions.keys().hasOnly(['requested'])
+            && validEvent(data.transitions.requested);
+        }
+
+        function validTransition(before, after) {
+          let previous = before.get('transitions', {});
+          return isNextState(before.state, after.state)
+            && after.diff(before).affectedKeys().hasOnly(['state', 'transitions'])
+            && !(after.state in previous)
+            && after.transitions.diff(previous).affectedKeys().hasOnly([after.state])
+            && validEvent(after.transitions[after.state]);
+        }
+
         allow read: if isTreatingProfessional(patientId) || isPatientSelf(patientId);
-        allow create, update: if isTreatingProfessional(patientId);
+        allow create: if isTreatingProfessional(patientId) && validRequest(request.resource.data);
+        allow update: if isTreatingProfessional(patientId)
+          && validTransition(resource.data, request.resource.data);
         allow delete: if false;
       }
 

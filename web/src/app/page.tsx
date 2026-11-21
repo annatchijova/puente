@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useAuth } from "@/lib/AuthProvider";
 
 export default function Home() {
@@ -17,9 +18,9 @@ export default function Home() {
       ) : user ? (
         <div className="flex flex-col items-center gap-2">
           <p className="text-sm text-gray-500">Signed in as {user.email}</p>
-          <a className="underline" href="/patient/patient-demo-001">
+          <Link className="underline" href="/patient/patient-demo-001">
             Open demo patient record
-          </a>
+          </Link>
           <button onClick={() => signOutUser()} className="text-sm text-gray-500 underline">
             Sign out
           </button>
