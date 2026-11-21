@@ -1,0 +1,19 @@
+# Node / Next.js
+node_modules/
+.next/
+out/
+.env
+.env.local
+.env*.local
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+*.local.json
+serviceAccountKey.json
+
+# OS / editor
+.DS_Store
+*.swp
