@@ -1,61 +1,110 @@
+<!-- title -->
+
 # PUENTE
 
-> Léelo en [español](README.es.md).
+**[English](README.md) · [Español](README.es.md) · [Technical README](TECHNICAL.md)**
 
-Institutional platform for continuity of care: verifiable bidirectional
-clinical translation, a shared record across the professionals treating the
-same patient, and peer review — built for the
-[Firebase Hybrid AI Hackathon](https://firebasehybridaihackathon.devpost.com/rules).
+## The problem
 
-The patient stops being responsible for carrying orders, results, and
-reports between offices. Every claim an AI generates is traceable to a
-specific fragment of the source document; if the system cannot justify an
-explanation, it flags that instead of inventing one.
+A doctor writes:
 
-Scope chosen: a **single-institution internal system** (one hospital, with
-fictional patients and professionals for the demo), not an
-inter-institutional network. That choice is revisitable later if the
-identity/interoperability problem across institutions becomes tractable.
+> *"Hemoglobin 10.2 g/dL. MCV 72 fL. Requesting iron panel to extend the
+> workup."*
 
-## Why "hybrid AI" and not a PDF summarizer
+The patient has no idea what that means, and in three weeks will sit in
+front of a different specialist who has never seen this note — because
+carrying it there was the patient's job, and papers get lost. A PDF
+summarizer can paraphrase the sentence. It cannot tell the patient whether
+the paraphrase is actually backed by the document, and it cannot tell the
+next doctor that this order ever happened.
 
-A PDF reader explains one isolated document. PUENTE links orders, results,
-reports, and reviews from different professionals within an institution,
-keeps the history, and uses **Firebase AI Logic hybrid inference** (Gemini
-Nano on-device via Chrome Built-in AI, falling back to Vertex AI in the
-cloud) to generate the translations — explicitly demonstrating the local
-processing and cloud transition the hackathon requires, not just "Gemini
-summarizes a PDF."
+## What PUENTE is
 
-## Language decision
+PUENTE is a shared clinical record for a hospital, with a translator built
+into it. Every order, result, and report stays attached to the patient and
+visible to whoever is treating them — nobody has to carry it between
+offices. Every sentence the translator produces is tied to the exact part
+of the document that justifies it. If nothing in the document justifies a
+claim, PUENTE says so instead of inventing one.
 
-See [`docs/language-decision.md`](docs/language-decision.md) for the full
-record (forces, rejected candidates, reopen condition).
+## See it work
 
-Summary: **TypeScript end-to-end** — Next.js (App Router) + Firebase
-Functions 2nd gen + Firestore + the Firebase AI Logic Web SDK. The
-hackathon's hybrid inference only exists today through the web SDK (Chrome
-Built-in AI), which fixes the frontend as JS/TS; adding a second language on
-the backend would not remove any real boundary and costs time there isn't
-in 10 days.
+**Input** (a real-shaped doctor's note):
 
-## Levels
+```
+Hemoglobin 10.2 g/dL. MCV 72 fL. Requesting iron panel to extend the workup.
+```
 
-See [`docs/levels.md`](docs/levels.md). Built level by level: each level is
-a coherent, usable state of the product, not an isolated technical layer
-(there is no separate "security level" — roles and authorship exist from
-Level 1).
+**Output** (patient-facing translation, each sentence linked to its source span):
 
-1. Shared record with provenance
-2. Traceable clinical translation
-3. Order tracking
-4. Peer review
-5. Patient view + accessibility
+```
+Your test shows a lower amount of hemoglobin than the reference range,
+and red blood cells that are smaller than usual.                [→ source: "Hemoglobin 10.2 g/dL. MCV 72 fL."]
 
-## Data
+The doctor requested additional tests to investigate the cause.  [→ source: "Requesting iron panel to extend the workup."]
+```
 
-All patients, professionals, orders, and results used in the demo are
-fictional, generated for this project.
+If a generated sentence has no matching span, PUENTE marks it
+**unjustified** instead of showing it as fact — abstaining is a valid
+output, not a failure.
+
+The reverse direction works too: a patient describing symptoms in plain
+language gets structured into a draft note for the professional to review.
+It is never auto-promoted into a diagnosis or a confirmed finding.
+
+## Why not just summarize the PDF
+
+| Typical PDF / chatbot summarizer | PUENTE |
+|---|---|
+| Explains one document in isolation | Links orders, results, reports, and reviews across specialists for the same patient |
+| Can state things the source doesn't actually say | Every generated sentence cites a source span; unjustified claims are flagged, not produced |
+| Patient carries the papers between doctors | The record follows the patient — no professional depends on them to relay it |
+| One-way: document → explanation | Bidirectional — also structures patient-reported symptoms into a note for review |
+| No record of who reviewed what | A second opinion attaches with its own authorship and timestamp, preserved alongside the original |
+
+## How it works, briefly
+
+- **Firebase AI Logic hybrid inference** generates the translation: Gemini
+  Nano running on-device in Chrome when available, falling back to Vertex
+  AI in the cloud otherwise — the same feature either way, demonstrating
+  both paths rather than only the cloud one.
+- Every document is sealed at write time (hashed, authored, timestamped) in
+  **Firestore**, so a generated sentence can always be traced back to it.
+- Role-based access means a professional currently treating the patient can
+  see the shared record; the patient can read their own.
+
+Full architecture, the language decision, and the level-by-level build plan
+are in the **[Technical README](TECHNICAL.md)**.
+
+## Scope for this build
+
+A single hospital, with fictional patients and professionals for the demo
+— not an inter-institutional network. See
+[`docs/levels.md`](docs/levels.md) for what each build level adds.
+
+## Repository
+
+```
+puente/
+├── web/           # Next.js app: shared record UI, translation UI, Firebase AI Logic
+├── docs/          # language decision and level-by-level build plan
+├── TECHNICAL.md   # architecture, data model, authority boundaries, limitations
+└── LICENSE        # Apache 2.0
+```
+
+## Status
+
+Early build, scaffold stage (see [`docs/levels.md`](docs/levels.md) for
+which level is live). Data used anywhere in this repo is fictional.
+
+## Try it
+
+```bash
+cd web
+npm install
+cp .env.local.example .env.local   # fill in your own Firebase project config
+npm run dev
+```
 
 ## License
 

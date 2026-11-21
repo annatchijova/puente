@@ -1,61 +1,113 @@
+<!-- title -->
+
 # PUENTE
 
-> Read this in [English](README.md).
+**[English](README.md) · [Español](README.es.md) · [Technical README](TECHNICAL.md)**
 
-Plataforma institucional de continuidad asistencial: traducción clínica
-bidireccional y verificable, historial compartido entre profesionales
-tratantes de un mismo paciente, y revisión entre pares — construida para el
-[Firebase Hybrid AI Hackathon](https://firebasehybridaihackathon.devpost.com/rules).
+## El problema
 
-El paciente deja de ser responsable de transportar órdenes, resultados e
-informes entre consultorios. Cada afirmación generada por IA es trazable a un
-fragmento concreto del documento original; si el sistema no puede justificar
-una explicación, lo señala en vez de inventarla.
+Un médico escribe:
 
-Ámbito elegido: **sistema interno de una sola institución** (un hospital,
-con profesionales y pacientes ficticios para la demo), no una red
-inter-institucional. Esa decisión se puede revisar más adelante si el
-problema de identidad/interoperabilidad entre instituciones se vuelve
-tratable.
+> *«Hemoglobina 10,2 g/dL. VCM 72 fL. Se solicita perfil férrico para
+> ampliar estudio».*
 
-## Por qué "hybrid AI" y no un resumen de PDF
+La paciente no tiene idea de qué significa eso, y en tres semanas se va a
+sentar frente a otro profesional que nunca vio esta nota — porque llevarla
+ahí era su trabajo, y los papeles se pierden. Un resumidor de PDF puede
+parafrasear la frase. No puede decirle a la paciente si esa paráfrasis
+realmente está respaldada por el documento, ni puede avisarle al próximo
+médico que esta orden existió.
 
-Un lector de PDF resume un documento aislado. PUENTE relaciona órdenes,
-resultados, informes y revisiones de distintos profesionales dentro de una
-institución, mantiene el historial, y usa **Firebase AI Logic hybrid
-inference** (Gemini Nano on-device vía Chrome Built-in AI, con fallback a
-Vertex AI en la nube) para generar las traducciones — demostrando
-explícitamente el procesamiento local y la transición a la nube que exige
-el concurso, no solo "Gemini resume un PDF".
+## Qué es PUENTE
 
-## Decisión de lenguaje
+PUENTE es un expediente clínico compartido para un hospital, con un
+traductor integrado. Cada orden, resultado e informe queda atado a la
+paciente y visible para quien la está tratando — nadie tiene que llevarlo
+entre consultorios. Cada frase que genera el traductor está vinculada a la
+parte exacta del documento que la justifica. Si nada en el documento
+justifica una afirmación, PUENTE lo señala en vez de inventarla.
 
-Ver [`docs/language-decision.md`](docs/language-decision.md) para el
-registro completo (fuerzas, candidatos rechazados, condición de reapertura).
+## Verlo funcionar
 
-Resumen: **TypeScript end-to-end** — Next.js (App Router) + Firebase
-Functions 2nd gen + Firestore + Firebase AI Logic Web SDK. El hybrid
-inference del hackathon solo existe hoy vía el SDK web (Chrome Built-in AI),
-lo que fija el frontend en JS/TS; agregar un segundo lenguaje en el backend
-no evita ninguna frontera real y cuesta tiempo que no hay en 10 días.
+**Entrada** (una nota médica real):
 
-## Niveles
+```
+Hemoglobina 10,2 g/dL. VCM 72 fL. Se solicita perfil férrico para ampliar estudio.
+```
 
-Ver [`docs/levels.md`](docs/levels.md). Construcción por niveles: cada nivel
-es un estado coherente y usable del producto, no una capa técnica aislada
-(no hay "nivel de seguridad" aparte — los roles y la autoría están desde el
-Nivel 1).
+**Salida** (traducción para la paciente, cada frase enlazada a su fragmento fuente):
 
-1. Expediente compartido con procedencia
-2. Traducción clínica trazable
-3. Seguimiento de órdenes
-4. Revisión entre pares
-5. Vista paciente + accesibilidad
+```
+El análisis muestra una cantidad de hemoglobina inferior al valor de
+referencia, y glóbulos rojos más pequeños de lo habitual.        [→ fuente: "Hemoglobina 10,2 g/dL. VCM 72 fL."]
 
-## Datos
+El profesional solicitó estudios adicionales para investigar la causa.  [→ fuente: "Se solicita perfil férrico para ampliar estudio."]
+```
 
-Todos los pacientes, profesionales, órdenes y resultados usados en la demo
-son ficticios, generados para este proyecto.
+Si una frase generada no tiene un fragmento que la respalde, PUENTE la
+marca como **no justificada** en vez de mostrarla como un hecho — abstenerse
+es una salida válida, no una falla.
+
+La dirección inversa también funciona: una paciente que describe sus
+síntomas con palabras cotidianas obtiene una nota estructurada para que el
+profesional la revise. Nunca se convierte automáticamente en diagnóstico ni
+en hallazgo confirmado.
+
+## Por qué no alcanza con resumir el PDF
+
+| Resumidor de PDF / chatbot típico | PUENTE |
+|---|---|
+| Explica un documento aislado | Relaciona órdenes, resultados, informes y revisiones de distintos profesionales de la misma paciente |
+| Puede afirmar algo que la fuente no dice | Cada frase generada cita un fragmento fuente; lo no justificado se señala, no se produce |
+| La paciente lleva los papeles entre médicos | El expediente sigue a la paciente — ningún profesional depende de que ella lo transmita |
+| Una sola dirección: documento → explicación | Bidireccional — también estructura los síntomas relatados por la paciente en una nota para revisión |
+| No queda registro de quién revisó qué | Una segunda opinión se adjunta con su propia autoría y fecha, conservada junto a la original |
+
+## Cómo funciona, en resumen
+
+- **Firebase AI Logic hybrid inference** genera la traducción: Gemini Nano
+  corriendo on-device en Chrome cuando está disponible, con fallback a
+  Vertex AI en la nube cuando no — la misma función por los dos caminos,
+  para demostrar ambos y no solo el de la nube.
+- Cada documento se sella al escribirse (hash, autoría, timestamp) en
+  **Firestore**, así una frase generada siempre puede rastrearse hasta él.
+- El acceso por rol determina que un profesional tratante vea el expediente
+  compartido; la paciente puede leer el suyo.
+
+La arquitectura completa, la decisión de lenguaje, y el plan de
+construcción por niveles están en el **[Technical README](TECHNICAL.md)**
+(en inglés).
+
+## Alcance de esta construcción
+
+Un solo hospital, con pacientes y profesionales ficticios para la demo —
+no una red inter-institucional. Ver
+[`docs/levels.md`](docs/levels.md) para lo que agrega cada nivel.
+
+## Repositorio
+
+```
+puente/
+├── web/           # app Next.js: expediente compartido, traducción, Firebase AI Logic
+├── docs/          # decisión de lenguaje y plan de niveles
+├── TECHNICAL.md   # arquitectura, modelo de datos, límites de autoridad, limitaciones
+└── LICENSE        # Apache 2.0
+```
+
+## Estado
+
+Construcción temprana, etapa de scaffold (ver [`docs/levels.md`](docs/levels.md)
+para saber qué nivel está activo). Los datos usados en este repositorio son
+ficticios.
+
+## Probarlo
+
+```bash
+cd web
+npm install
+cp .env.local.example .env.local   # completar con tu propio proyecto de Firebase
+npm run dev
+```
 
 ## Licencia
 
