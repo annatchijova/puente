@@ -11,7 +11,7 @@ hardening pass.
 If the 10-day window runs out before Level 5, stop at the highest level
 reached — do not thin out all five to fit the time.
 
-## Level 1 — Expediente compartido con procedencia
+## Level 1 — Shared record with provenance
 
 - Document ingestion (order/result/report) tied to a patient record.
 - Every document carries authorship, timestamp, and a SHA-256 hash sealed
@@ -23,7 +23,7 @@ reached — do not thin out all five to fit the time.
 - Useful standalone: demonstrates "the patient stops being the courier"
   even with zero AI involved.
 
-## Level 2 — Traducción clínica trazable
+## Level 2 — Traceable clinical translation
 
 - Firebase AI Logic hybrid inference: Gemini Nano on-device (Chrome
   Built-in AI) with fallback to Vertex AI in the cloud when on-device is
@@ -37,14 +37,14 @@ reached — do not thin out all five to fit the time.
   structured into a draft note for professional review — never
   auto-promoted to a diagnosis or confirmed finding.
 
-## Level 3 — Seguimiento de órdenes
+## Level 3 — Order tracking
 
-- Explicit state machine per order: solicitado → programado → realizado →
-  resultado recibido → resultado revisado.
+- Explicit state machine per order: requested → scheduled → performed →
+  result received → result reviewed.
 - Dashboard surfaces orders stuck in a state past an expected window —
   flagged as a gap to check, never asserted as a medical error.
 
-## Level 4 — Revisión entre pares
+## Level 4 — Peer review
 
 - A professional can request a second opinion on a specific result from
   another authorized professional.
@@ -53,7 +53,7 @@ reached — do not thin out all five to fit the time.
   the first interpretation.
 - Disagreements are preserved, not voted on or averaged.
 
-## Level 5 — Vista paciente + accesibilidad
+## Level 5 — Patient view + accessibility
 
 - Read-only patient view of their own longitudinal history and its
   translated explanations.
@@ -62,7 +62,7 @@ reached — do not thin out all five to fit the time.
 - Reinforces the Level 1 authority model: patients read their own record,
   they do not request studies or alter clinical content.
 
-## Level 6 — Observabilidad clínica y explicabilidad documental
+## Level 6 — Clinical observability and documentary explainability
 
 **Priority:** low. **Depends on:** Levels 1–5, complete and verified.
 **Status:** planned, non-blocking for the hackathon submission.
