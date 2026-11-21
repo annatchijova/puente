@@ -1,0 +1,67 @@
+rules_version = '2';
+
+// Level 1 authority model (see TECHNICAL.md):
+// - a professional sees a patient's record only while listed as currently
+//   treating that patient, checked at read time, not granted permanently
+//   on first contact.
+// - a patient can read their own record; they cannot create, edit, or
+//   request studies.
+// - closed by default: anything not explicitly allowed below is denied.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isTreatingProfessional(patientId) {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/patients/$(patientId)/treatingProfessionals/$(request.auth.uid));
+    }
+
+    function isPatientSelf(patientId) {
+      return isSignedIn() && request.auth.uid == patientId;
+    }
+
+    match /patients/{patientId} {
+      allow read: if isTreatingProfessional(patientId) || isPatientSelf(patientId);
+      allow write: if false; // patient demographic record is seeded, not edited via the client
+
+      match /treatingProfessionals/{profId} {
+        // membership list itself is only readable by members of it (so a
+        // professional can see who else treats this patient) or the patient.
+        allow read: if isTreatingProfessional(patientId) || isPatientSelf(patientId);
+        allow write: if false; // granted by an authorized backend process only
+      }
+
+      match /documents/{docId} {
+        allow read: if isTreatingProfessional(patientId) || isPatientSelf(patientId);
+        // a document is sealed (hash + authorship) at write time by a
+        // treating professional; it is never edited after creation.
+        allow create: if isTreatingProfessional(patientId)
+          && request.resource.data.authorId == request.auth.uid
+          && request.resource.data.keys().hasAll(['authorId', 'createdAt', 'sha256', 'kind', 'content']);
+        allow update, delete: if false;
+      }
+
+      match /translations/{docId} {
+        allow read: if isTreatingProfessional(patientId) || isPatientSelf(patientId);
+        allow write: if false; // written only by the backend generation function
+      }
+
+      match /orders/{orderId} {
+        allow read: if isTreatingProfessional(patientId) || isPatientSelf(patientId);
+        allow create, update: if isTreatingProfessional(patientId);
+        allow delete: if false;
+      }
+
+      match /reviews/{reviewId} {
+        allow read: if isTreatingProfessional(patientId) || isPatientSelf(patientId);
+        allow create: if isTreatingProfessional(patientId)
+          && request.resource.data.authorId == request.auth.uid;
+        allow update, delete: if false; // a review is preserved, never overwritten
+      }
+    }
+  }
+}
