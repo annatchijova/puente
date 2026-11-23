@@ -67,7 +67,7 @@ en hallazgo confirmado.
 
 - **Firebase AI Logic hybrid inference** genera la traducción: Gemini Nano
   corriendo on-device en Chrome cuando está disponible, con fallback a
-  Vertex AI en la nube cuando no — la misma función por los dos caminos,
+  la Gemini Developer API en la nube cuando no — la misma función por los dos caminos,
   para demostrar ambos y no solo el de la nube.
 - Cada documento se sella al escribirse (hash, autoría, timestamp) en
   **Firestore**, así una frase generada siempre puede rastrearse hasta él.

@@ -5,7 +5,7 @@ on-device/cloud LLM inference). Not relational-heavy, not numerically
 intensive, not systems-level.
 
 Language imposed?: partially — the hackathon's hybrid inference requirement
-(on-device Gemini Nano + cloud Vertex AI fallback) is only exposed today
+(on-device Gemini Nano + cloud Gemini Developer API fallback) is only exposed today
 through the **Firebase AI Logic Web SDK**, which runs on Chrome's Built-in AI.
 There is no equivalent client SDK for Python, Go, or JVM languages. This fixes
 the frontend as JavaScript/TypeScript regardless of any other preference.

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AgentPlatformBackend, getAI, getGenerativeModel, InferenceMode, InferenceSource, Schema } from "firebase/ai";
+import { GoogleAIBackend, getAI, getGenerativeModel, InferenceMode, InferenceSource, Schema } from "firebase/ai";
 import { doc, getDocFromServer } from "firebase/firestore";
 import { app, auth, db } from "@/lib/firebase";
 import { sealDocument } from "@/lib/canonical";
@@ -42,7 +42,7 @@ export default function TraceableDraft({ document, uid }: {
     setError("");
     setPending(true);
     try {
-      const model = getGenerativeModel(getAI(app, { backend: new AgentPlatformBackend() }), {
+      const model = getGenerativeModel(getAI(app, { backend: new GoogleAIBackend() }), {
         mode: InferenceMode.PREFER_ON_DEVICE,
         inCloudParams: {
           model: "gemini-3.5-flash-lite",

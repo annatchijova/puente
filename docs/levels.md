@@ -26,8 +26,13 @@ reached — do not thin out all five to fit the time.
 ## Level 2 — Traceable clinical translation
 
 - Firebase AI Logic hybrid inference: Gemini Nano on-device (Chrome
-  Built-in AI) with fallback to Vertex AI in the cloud when on-device is
-  unavailable — both paths demoable, not just the cloud one.
+  Built-in AI) with fallback to the Gemini Developer API in the cloud
+  when on-device is unavailable — both paths demoable, not just the
+  cloud one. (Switched from the Agent Platform Gemini API / Vertex AI
+  provider: that provider requires the Blaze billing plan with a linked
+  billing account, which this project does not have. The Gemini
+  Developer API runs on the free Spark plan and keeps the same
+  on-device/cloud hybrid architecture.)
 - Every generated sentence in the patient-facing explanation is linked to
   a specific span in the source document.
 - If no source span justifies a claim, the system marks it as

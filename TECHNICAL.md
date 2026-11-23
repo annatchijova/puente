@@ -20,7 +20,7 @@ backend) cannot silently change another:
 The Hybrid AI layer never writes directly to a sealed document — it
 produces a translation *of* an already-sealed source, and the translation
 is stored beside the source, not inside it. Swapping the inference backend
-(on-device Gemini Nano ↔ Vertex AI cloud) must change only wording, never
+(on-device Gemini Nano ↔ cloud Gemini Developer API) must change only wording, never
 which source document a claim is traced to. This mirrors the same
 LLM-out-of-the-decision-path discipline used in this author's other
 sealed-result projects (VIGÍA, VELO): the model explains a fixed artifact,
