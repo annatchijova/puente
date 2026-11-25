@@ -47,7 +47,17 @@ service cloud.firestore {
 
       match /translations/{docId} {
         allow read: if isTreatingProfessional(patientId) || isPatientSelf(patientId);
-        allow write: if false; // written only by the backend generation function
+        // a translation is saved once by the professional who reviewed it,
+        // beside the sealed source document it explains, never inside it.
+        allow create: if isTreatingProfessional(patientId)
+          && exists(/databases/$(database)/documents/patients/$(patientId)/documents/$(docId))
+          && request.resource.data.documentId == docId
+          && request.resource.data.generatedBy == request.auth.uid
+          && request.resource.data.generatedAt == request.time
+          && request.resource.data.modality in ['on-device', 'cloud']
+          && request.resource.data.keys().hasOnly(
+               ['documentId', 'sentences', 'generatedAt', 'generatedBy', 'modality']);
+        allow update, delete: if false; // fixed once saved; regenerating creates a new review, not a silent edit
       }
 
       match /orders/{orderId} {

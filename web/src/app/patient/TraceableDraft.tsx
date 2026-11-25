@@ -6,7 +6,8 @@ import { doc, getDocFromServer } from "firebase/firestore";
 import { app, auth, db } from "@/lib/firebase";
 import { sealDocument } from "@/lib/canonical";
 import { parseDraft } from "@/lib/traceableDraft";
-import type { ClinicalDocument } from "@/lib/types";
+import { saveTranslation } from "@/lib/translations";
+import type { ClinicalDocument, TranslationSentence } from "@/lib/types";
 import StatusBadge from "@/components/ui/StatusBadge";
 
 export const demoPatientId = "patient-demo-001";
@@ -24,9 +25,11 @@ const draftSchema = Schema.array({
 const demoSymptoms = "I've felt unusually tired for three days. I felt dizzy when I stood up this morning.";
 
 type DraftKind = "explanation" | "symptoms";
+type RawModality = "on-device" | "cloud" | null;
 type Draft = {
   kind: DraftKind;
   modality: string;
+  rawModality: RawModality;
   statements: ReturnType<typeof parseDraft>;
 };
 
@@ -37,6 +40,8 @@ export default function TraceableDraft({ document, uid }: {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [saveError, setSaveError] = useState("");
 
   async function generate(kind: DraftKind) {
     setDraft(null);
@@ -93,14 +98,40 @@ export default function TraceableDraft({ document, uid }: {
         return;
       }
 
-      const modality = response.inferenceSource === InferenceSource.ON_DEVICE
-        ? "On device"
-        : response.inferenceSource === InferenceSource.IN_CLOUD ? "Cloud" : "Inference location unavailable";
-      setDraft({ kind, statements, modality });
+      const rawModality: RawModality = response.inferenceSource === InferenceSource.ON_DEVICE
+        ? "on-device"
+        : response.inferenceSource === InferenceSource.IN_CLOUD ? "cloud" : null;
+      const modality = rawModality === "on-device" ? "On device"
+        : rawModality === "cloud" ? "Cloud" : "Inference location unavailable";
+      setSaveState("idle");
+      setSaveError("");
+      setDraft({ kind, statements, modality, rawModality });
     } catch {
       setError("Could not generate a draft. Check access and Firebase AI Logic availability, then try again.");
     } finally {
       setPending(false);
+    }
+  }
+
+  async function saveToPatientRecord() {
+    if (!draft || draft.kind !== "explanation" || !draft.rawModality) return;
+    const sentences: TranslationSentence[] = draft.statements.map((statement) =>
+      statement
+        ? { text: statement.text, sourceSpan: statement.sourceSpan, unjustified: false }
+        : { text: "Abstained — no exact source quote was provided.", sourceSpan: null, unjustified: true },
+    );
+    setSaveState("saving");
+    setSaveError("");
+    try {
+      await saveTranslation(demoPatientId, document.id, uid, sentences, draft.rawModality);
+      setSaveState("saved");
+    } catch (err) {
+      setSaveState("error");
+      setSaveError(
+        err instanceof Error && err.message.includes("permission")
+          ? "This document already has a saved translation."
+          : "Could not save this explanation. Try again.",
+      );
     }
   }
 
@@ -140,6 +171,23 @@ export default function TraceableDraft({ document, uid }: {
               </li>
             ))}
           </ul>
+          {draft.kind === "explanation" && (
+            <div className="flex flex-wrap items-center gap-2">
+              {saveState === "saved" ? (
+                <StatusBadge level="stable" label="Saved to patient record" />
+              ) : (
+                <button
+                  type="button"
+                  className="rounded-md bg-accent px-3 py-2 text-accent-foreground disabled:opacity-50"
+                  disabled={saveState === "saving" || !draft.rawModality}
+                  onClick={() => void saveToPatientRecord()}
+                >
+                  Save to patient record
+                </button>
+              )}
+              {saveError && <StatusBadge level="critical" label={saveError} />}
+            </div>
+          )}
         </section>
       )}
     </div>

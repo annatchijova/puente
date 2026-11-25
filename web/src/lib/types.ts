@@ -33,6 +33,7 @@ export interface Translation {
   documentId: string;
   sentences: TranslationSentence[];
   generatedAt: string; // ISO timestamp
+  generatedBy: string; // uid of the treating professional who saved it
   modality: "on-device" | "cloud"; // which hybrid-inference path produced it
 }
 

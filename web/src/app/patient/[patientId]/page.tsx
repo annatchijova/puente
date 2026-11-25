@@ -5,12 +5,15 @@ import { Suspense } from "react";
 import { useAuth } from "@/lib/AuthProvider";
 import { useSharedRecord } from "@/lib/useSharedRecord";
 import { orderDeadline, useOrders } from "@/lib/orders";
+import { useTranslations } from "@/lib/translations";
 import { useNow } from "@/lib/useNow";
 import Card from "@/components/ui/Card";
 import StatusBadge from "@/components/ui/StatusBadge";
+import SpeechButton from "@/components/ui/SpeechButton";
 import OrderTracking from "../OrderTracking";
 import PeerReview from "../PeerReview";
 import TraceableDraft, { demoPatientId, demoDocumentId } from "../TraceableDraft";
+import TranslationView from "../TranslationView";
 
 export default function PatientRecordPage() {
   return (
@@ -26,6 +29,7 @@ function PatientRecord() {
   const { documents, treatingProfessionals, loading, error } =
     useSharedRecord(patientId);
   const { orders, error: ordersError } = useOrders(patientId);
+  const { translations } = useTranslations(patientId);
   const now = useNow();
 
   if (authLoading) return <main className="p-8">Loading…</main>;
@@ -50,6 +54,7 @@ function PatientRecord() {
     <main className="mx-auto max-w-2xl space-y-6 p-8">
       <header className="flex flex-wrap items-center gap-2">
         <h1 className="text-xl font-semibold">Shared record — {patientId}</h1>
+        <StatusBadge level="info" label={canManage ? "Professional view" : "Patient view"} />
         {overdueOrders.length > 0 && (
           <StatusBadge level="warning" label={`${overdueOrders.length} order${overdueOrders.length === 1 ? "" : "s"} overdue`} />
         )}
@@ -84,7 +89,13 @@ function PatientRecord() {
                 {doc.kind} · {new Date(doc.createdAt).toLocaleString()} ·
                 sealed sha256:{doc.sha256.slice(0, 12)}…
               </p>
-              <p>{doc.content}</p>
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <p>{doc.content}</p>
+                <SpeechButton text={doc.content} label="Listen to original" />
+              </div>
+              {translations?.find((t) => t.documentId === doc.id) && (
+                <TranslationView translation={translations.find((t) => t.documentId === doc.id)!} />
+              )}
               {patientId === demoPatientId && doc.id === demoDocumentId && canManage && (
                 <TraceableDraft key={`${user.uid}:${doc.sha256}`} uid={user.uid} document={doc} />
               )}
