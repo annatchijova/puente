@@ -10,6 +10,7 @@ import { useNow } from "@/lib/useNow";
 import Card from "@/components/ui/Card";
 import StatusBadge from "@/components/ui/StatusBadge";
 import SpeechButton from "@/components/ui/SpeechButton";
+import AuditTrail from "../AuditTrail";
 import OrderTracking from "../OrderTracking";
 import PeerReview from "../PeerReview";
 import TraceableDraft, { demoPatientId, demoDocumentId } from "../TraceableDraft";
@@ -123,6 +124,12 @@ function PatientRecord() {
           readError={ordersError}
         />
       </Card>
+
+      {canManage && (
+        <Card as="section">
+          <AuditTrail patientId={patientId} />
+        </Card>
+      )}
     </main>
   );
 }

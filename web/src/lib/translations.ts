@@ -4,6 +4,7 @@ import {
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db } from "./firebase";
+import { recordAuditEvent } from "./audit";
 import type { TranslationSentence } from "./types";
 
 // generatedAt reads back as a Firestore Timestamp (server-assigned), not
@@ -36,6 +37,10 @@ export async function saveTranslation(
 ) {
   const ref = doc(db, "patients", patientId, "translations", documentId);
   await setDoc(ref, { documentId, sentences, generatedBy, modality, generatedAt: serverTimestamp() });
+  await recordAuditEvent(patientId, {
+    type: "translation_saved", actor: generatedBy, objectId: documentId,
+    summary: `Translation saved for document ${documentId}`,
+  }).catch(() => console.warn("Audit log entry failed for translation_saved", documentId));
 }
 
 export function useTranslations(patientId: string) {

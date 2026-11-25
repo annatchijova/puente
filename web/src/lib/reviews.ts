@@ -4,6 +4,7 @@ import {
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db } from "./firebase";
+import { recordAuditEvent } from "./audit";
 import type { ReviewRequest, ReviewResponse } from "./types";
 
 // createdAt reads back as a Firestore Timestamp (server-assigned), not the
@@ -32,6 +33,10 @@ export async function requestReview(
     assigneeId,
     createdAt: serverTimestamp(),
   });
+  await recordAuditEvent(patientId, {
+    type: "review_requested", actor: requesterId, objectId: ref.id,
+    summary: `Second opinion requested from ${assigneeId} on document ${documentId}`,
+  }).catch(() => console.warn("Audit log entry failed for review_requested", ref.id));
   return ref.id;
 }
 
@@ -49,6 +54,10 @@ export async function submitResponse(
 ) {
   const ref = doc(db, "patients", patientId, "reviewRequests", requestId, "response", "only");
   await setDoc(ref, { authorId, note, createdAt: serverTimestamp() });
+  await recordAuditEvent(patientId, {
+    type: "review_responded", actor: authorId, objectId: requestId,
+    summary: `Second opinion submitted for request ${requestId}`,
+  }).catch(() => console.warn("Audit log entry failed for review_responded", requestId));
 }
 
 export function useReviewRequests(patientId: string) {

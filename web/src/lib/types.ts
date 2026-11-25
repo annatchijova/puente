@@ -79,3 +79,26 @@ export interface ReviewResponse {
   note: string;
   createdAt: string; // ISO timestamp, server-assigned
 }
+
+// Level 6.3 tamper-evident audit trail (see docs/levels.md). Each event is
+// hash-chained to the previous one via `previousHash`/`entryHash`; the
+// chain is verified by lib/audit.ts's verifyChain, not by Firestore rules
+// (no hash primitive in the rules language — see firestore.rules).
+export type AuditEventType =
+  | "order_requested"
+  | "order_advanced"
+  | "translation_saved"
+  | "review_requested"
+  | "review_responded";
+
+export interface AuditEvent {
+  id: string;
+  seq: number;
+  type: AuditEventType;
+  actor: string; // uid
+  objectId: string; // orderId / documentId / reviewRequestId
+  summary: string; // id/state references only — no clinical content
+  at: string; // ISO, client-asserted; part of the hashed payload
+  previousHash: string | null;
+  entryHash: string;
+}

@@ -144,6 +144,29 @@ service cloud.firestore {
           allow update, delete: if false;
         }
       }
+
+      // Level 6.3 tamper-evident audit trail (see docs/levels.md). Rules
+      // cannot verify entryHash itself — there is no hash primitive in
+      // this language — so they enforce who can write and that `seq`
+      // moves forward one at a time; actual tamper-evidence is
+      // lib/audit.ts's verifyChain, which recomputes every hash.
+      match /auditLog/_head {
+        allow read: if isTreatingProfessional(patientId);
+        allow create: if isTreatingProfessional(patientId) && request.resource.data.seq == 0;
+        allow update: if isTreatingProfessional(patientId)
+          && request.resource.data.seq == resource.data.seq + 1;
+        allow delete: if false;
+      }
+
+      match /auditLog/{entryId} {
+        allow read: if isTreatingProfessional(patientId);
+        allow create: if entryId != '_head'
+          && isTreatingProfessional(patientId)
+          && request.resource.data.actor == request.auth.uid
+          && request.resource.data.keys().hasOnly(
+               ['seq', 'type', 'actor', 'objectId', 'summary', 'at', 'previousHash', 'entryHash', 'recordedAt']);
+        allow update, delete: if false; // append-only
+      }
     }
   }
 }

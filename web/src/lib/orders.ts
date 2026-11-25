@@ -1,6 +1,7 @@
 import { addDoc, collection, doc, onSnapshot, runTransaction, serverTimestamp, type Timestamp } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db } from "./firebase";
+import { recordAuditEvent } from "./audit";
 import type { Order, OrderState } from "./types";
 
 export const states: OrderState[] = [
@@ -77,13 +78,16 @@ export function useOrders(patientId: string) {
 
 export async function requestOrder(patientId: string, uid: string, description: string) {
   const at = serverTimestamp();
-  await addDoc(orderCollection(patientId), {
+  const ref = await addDoc(orderCollection(patientId), {
     description,
     requestedBy: uid,
     requestedAt: at,
     state: "requested",
     transitions: { requested: { at, by: uid } },
   });
+  await recordAuditEvent(patientId, {
+    type: "order_requested", actor: uid, objectId: ref.id, summary: `Order ${ref.id} requested`,
+  }).catch(() => console.warn("Audit log entry failed for order_requested", ref.id));
 }
 
 export async function advanceOrder(patientId: string, uid: string, order: TrackedOrder) {
@@ -100,4 +104,7 @@ export async function advanceOrder(patientId: string, uid: string, order: Tracke
       [`transitions.${next}`]: { at: serverTimestamp(), by: uid },
     });
   });
+  await recordAuditEvent(patientId, {
+    type: "order_advanced", actor: uid, objectId: order.id, summary: `Order ${order.id} advanced to ${next}`,
+  }).catch(() => console.warn("Audit log entry failed for order_advanced", order.id));
 }
