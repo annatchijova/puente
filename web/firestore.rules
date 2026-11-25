@@ -97,6 +97,43 @@ service cloud.firestore {
           && request.resource.data.authorId == request.auth.uid;
         allow update, delete: if false; // a review is preserved, never overwritten
       }
+
+      // Level 4 peer review (see docs/peer-review-design.md). Kept separate
+      // from /reviews above: that generic path permits patient reads and
+      // does not enforce assignment, both wrong for this workflow — a
+      // second-opinion request and its response stay within the treating
+      // team only.
+      match /reviewRequests/{requestId} {
+        function sealedDigestMatches(data) {
+          return data.resultDigest ==
+            get(/databases/$(database)/documents/patients/$(patientId)/documents/$(data.documentId)).data.sha256;
+        }
+
+        allow read: if isTreatingProfessional(patientId);
+        allow create: if isTreatingProfessional(patientId)
+          && request.resource.data.requesterId == request.auth.uid
+          && request.resource.data.assigneeId != request.auth.uid
+          && exists(/databases/$(database)/documents/patients/$(patientId)/treatingProfessionals/$(request.resource.data.assigneeId))
+          && request.resource.data.createdAt == request.time
+          && sealedDigestMatches(request.resource.data)
+          && request.resource.data.keys().hasOnly(
+               ['documentId', 'resultDigest', 'requesterId', 'assigneeId', 'createdAt']);
+        allow update, delete: if false; // a request is never edited after creation
+
+        match /response/{responseId} {
+          allow read: if isTreatingProfessional(patientId);
+          allow create: if responseId == 'only'
+            && isTreatingProfessional(patientId)
+            && request.auth.uid ==
+                 get(/databases/$(database)/documents/patients/$(patientId)/reviewRequests/$(requestId)).data.assigneeId
+            && request.resource.data.authorId == request.auth.uid
+            && request.resource.data.createdAt == request.time
+            && request.resource.data.keys().hasOnly(['authorId', 'note', 'createdAt']);
+          // fixed id + create-only: a retry or duplicate submission fails
+          // instead of overwriting the first response.
+          allow update, delete: if false;
+        }
+      }
     }
   }
 }

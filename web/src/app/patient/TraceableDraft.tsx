@@ -7,6 +7,7 @@ import { app, auth, db } from "@/lib/firebase";
 import { sealDocument } from "@/lib/canonical";
 import { parseDraft } from "@/lib/traceableDraft";
 import type { ClinicalDocument } from "@/lib/types";
+import StatusBadge from "@/components/ui/StatusBadge";
 
 export const demoPatientId = "patient-demo-001";
 export const demoDocumentId = "doc-cbc-001";
@@ -107,21 +108,23 @@ export default function TraceableDraft({ document, uid }: {
     <div className="mt-3 space-y-2 text-sm" aria-busy={pending}>
       <p>Fictional examples. Generation may use cloud inference.</p>
       <div className="flex flex-wrap gap-3">
-        <button type="button" className="underline" disabled={pending} onClick={() => void generate("explanation")}>
+        <button type="button" className="text-accent underline" disabled={pending} onClick={() => void generate("explanation")}>
           Draft a plain-language explanation
         </button>
-        <button type="button" className="underline" disabled={pending} onClick={() => void generate("symptoms")}>
+        <button type="button" className="text-accent underline" disabled={pending} onClick={() => void generate("symptoms")}>
           Draft a note from example symptoms
         </button>
       </div>
       {pending && <p role="status">Generating draft…</p>}
-      {error && <p role="alert">{error}</p>}
+      {error && <p role="alert"><StatusBadge level="critical" label={error} /></p>}
       {draft && (
         <section aria-label="Generated draft" className="space-y-2">
           <h3 className="font-medium">
             {draft.kind === "explanation" ? "Plain-language explanation" : "Patient-reported symptom note"}
           </h3>
-          <p>Awaiting professional review · {draft.modality}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusBadge level="info" label={`Awaiting professional review · ${draft.modality}`} />
+          </div>
           {draft.kind === "symptoms" && <p>Example patient report: {demoSymptoms}</p>}
           <ul className="space-y-2">
             {draft.statements.map((statement, index) => (
@@ -129,9 +132,11 @@ export default function TraceableDraft({ document, uid }: {
                 {statement ? (
                   <>
                     <p>{statement.text}</p>
-                    <blockquote className="border-l pl-2">{statement.sourceSpan}</blockquote>
+                    <blockquote className="border-l-2 border-border pl-2 text-foreground/80">{statement.sourceSpan}</blockquote>
                   </>
-                ) : <p>Abstained. No exact, unique source quote was provided.</p>}
+                ) : (
+                  <StatusBadge level="warning" label="Abstained — no exact source quote was provided" />
+                )}
               </li>
             ))}
           </ul>

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import Card from "@/components/ui/Card";
+import StatusBadge from "@/components/ui/StatusBadge";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -24,35 +26,37 @@ export default function LoginPage() {
 
   return (
     <main className="flex-1 flex items-center justify-center p-8">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
-        <h1 className="text-xl font-semibold">PUENTE — Sign in</h1>
-        <p className="text-sm text-gray-500">
-          Fictional demo accounts only — no real patient data.
-        </p>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-          required
-        />
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <button
-          type="submit"
-          className="w-full bg-black text-white rounded px-3 py-2"
-        >
-          Sign in
-        </button>
-      </form>
+      <Card as="section" className="w-full max-w-sm">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <h1 className="text-xl font-semibold">PUENTE — Sign in</h1>
+          <p className="text-sm text-foreground/70">
+            Fictional demo accounts only — no real patient data.
+          </p>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-md border border-border bg-surface px-3 py-2"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full rounded-md border border-border bg-surface px-3 py-2"
+            required
+          />
+          {error && <p role="alert"><StatusBadge level="critical" label={error} /></p>}
+          <button
+            type="submit"
+            className="w-full rounded-md bg-accent px-3 py-2 text-accent-foreground"
+          >
+            Sign in
+          </button>
+        </form>
+      </Card>
     </main>
   );
 }

@@ -1,4 +1,5 @@
-import { addDoc, collection, doc, runTransaction, serverTimestamp, type Timestamp } from "firebase/firestore";
+import { addDoc, collection, doc, onSnapshot, runTransaction, serverTimestamp, type Timestamp } from "firebase/firestore";
+import { useEffect, useState } from "react";
 import { db } from "./firebase";
 import type { Order, OrderState } from "./types";
 
@@ -58,6 +59,21 @@ export function orderDeadline(order: TrackedOrder) {
 }
 
 export const orderCollection = (patientId: string) => collection(db, "patients", patientId, "orders");
+
+export function useOrders(patientId: string) {
+  const [orders, setOrders] = useState<TrackedOrder[] | null>(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => onSnapshot(orderCollection(patientId), (snapshot) => {
+    setOrders(snapshot.docs.map((item) => ({ ...item.data(), id: item.id }) as TrackedOrder));
+    setError(false);
+  }, () => {
+    setOrders(null);
+    setError(true);
+  }), [patientId]);
+
+  return { orders, error };
+}
 
 export async function requestOrder(patientId: string, uid: string, description: string) {
   const at = serverTimestamp();

@@ -1,36 +1,26 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
-import { onSnapshot } from "firebase/firestore";
+import { useState, type FormEvent } from "react";
 import {
-  advanceOrder, nextOrderState, orderCollection, orderDeadline, orderHistory,
+  advanceOrder, nextOrderState, orderDeadline, orderHistory,
   requestOrder, stateLabels, type TrackedOrder,
 } from "@/lib/orders";
+import { useNow } from "@/lib/useNow";
+import Card from "@/components/ui/Card";
+import StatusBadge from "@/components/ui/StatusBadge";
+import CollapsibleSection from "@/components/ui/CollapsibleSection";
 
-export default function OrderTracking({ patientId, uid, canManage }: {
+export default function OrderTracking({ patientId, uid, canManage, orders, readError }: {
   patientId: string;
   uid: string;
   canManage: boolean;
+  orders: TrackedOrder[] | null;
+  readError: boolean;
 }) {
-  const [orders, setOrders] = useState<TrackedOrder[] | null>(null);
-  const [readError, setReadError] = useState(false);
   const [writeError, setWriteError] = useState("");
   const [pending, setPending] = useState(false);
   const [description, setDescription] = useState("");
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => onSnapshot(orderCollection(patientId), (snapshot) => {
-    setOrders(snapshot.docs.map((item) => ({ ...item.data(), id: item.id }) as TrackedOrder));
-    setReadError(false);
-  }, () => {
-    setOrders(null);
-    setReadError(true);
-  }), [patientId]);
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 30_000);
-    return () => window.clearInterval(timer);
-  }, []);
+  const now = useNow();
 
   async function save(operation: () => Promise<void>) {
     setPending(true);
@@ -55,53 +45,57 @@ export default function OrderTracking({ patientId, uid, canManage }: {
 
   return (
     <section className="space-y-3">
-      <h2 className="font-medium">Order tracking</h2>
-      {readError && <p role="alert">Could not load orders.</p>}
+      <h2 className="font-medium text-foreground">Order tracking</h2>
+      {readError && <p role="alert"><StatusBadge level="critical" label="Could not load orders." /></p>}
       {!readError && !orders && <p role="status">Loading orders…</p>}
       {orders?.length === 0 && <p>No orders recorded.</p>}
       {orders && canManage && (
         <form onSubmit={create} className="flex flex-wrap items-end gap-2">
           <label className="flex flex-col gap-1">
             Order description
-            <input className="rounded border p-2" value={description} required maxLength={200}
+            <input className="rounded-md border border-border bg-surface p-2" value={description} required maxLength={200}
               onChange={(event) => setDescription(event.target.value)} disabled={pending} />
           </label>
-          <button className="rounded border p-2" disabled={pending || !description.trim()}>
+          <button className="rounded-md bg-accent px-3 py-2 text-accent-foreground disabled:opacity-50" disabled={pending || !description.trim()}>
             Request order
           </button>
         </form>
       )}
-      {writeError && <p role="alert">{writeError}</p>}
+      {writeError && <p role="alert"><StatusBadge level="critical" label={writeError} /></p>}
       {pending && <p role="status">Saving order…</p>}
-      <ul className="space-y-2">
+      <ul className="space-y-3">
         {orders?.map((order) => {
           const next = nextOrderState(order.state);
           const deadline = orderDeadline(order);
+          const overdue = deadline !== undefined && now > deadline;
           return (
-            <li key={order.id} className="space-y-2 rounded border p-3">
+            <Card as="li" key={order.id} className="space-y-2">
               <h3 className="font-medium">{order.description}</h3>
-              <p>{stateLabels[order.state] ?? "State unavailable"}</p>
-              {deadline !== undefined && now > deadline && (
-                <p className="font-medium">Follow-up to check · demo window exceeded</p>
-              )}
-              {next && deadline === undefined && <p>Follow-up timing unavailable.</p>}
-              <details>
-                <summary>State history</summary>
-                <ol className="pl-4 text-sm">
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusBadge level="info" label={stateLabels[order.state] ?? "State unavailable"} />
+                {overdue && (
+                  <StatusBadge level="warning" label="Follow-up to check · demo window exceeded" />
+                )}
+                {next && deadline === undefined && (
+                  <StatusBadge level="warning" label="Follow-up timing unavailable" />
+                )}
+              </div>
+              <CollapsibleSection summary="State history">
+                <ol className="space-y-1">
                   {orderHistory(order).map(({ state, at, by }) => (
                     <li key={state}>
                       {stateLabels[state]} · {at && Number.isFinite(at.getTime()) ? at.toLocaleString() : "Time unavailable"} · {by}
                     </li>
                   ))}
                 </ol>
-              </details>
+              </CollapsibleSection>
               {canManage && next && (
-                <button type="button" className="underline" disabled={pending}
+                <button type="button" className="text-accent underline" disabled={pending}
                   onClick={() => void save(() => advanceOrder(patientId, uid, order))}>
                   Mark as {stateLabels[next].toLowerCase()}
                 </button>
               )}
-            </li>
+            </Card>
           );
         })}
       </ul>
