@@ -16,7 +16,10 @@
   --stable: #1c6b4c;
   --stable-surface: #e4f3ec;
   --radius-md: 0.5rem;
+  --radius-lg: 1rem;
   --shadow-sm: 0 1px 2px rgba(30, 41, 59, 0.08);
+  --shadow-md: 0 4px 16px rgba(30, 64, 110, 0.08);
+  --blob: #bcdcf5;
 }
 
 @theme inline {
@@ -35,6 +38,7 @@
   --color-stable: var(--stable);
   --color-stable-surface: var(--stable-surface);
   --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -56,11 +60,54 @@
     --stable: #7fd0ab;
     --stable-surface: #15291f;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+    --blob: #1d3a56;
   }
 }
 
-body {
+/*
+ * Background lives on html, not body: if html has no background of its
+ * own, the browser propagates body's background to the viewport canvas,
+ * which paints behind absolutely everything — including body's own
+ * fixed, negative-z-index blob pseudo-elements below. Keeping it on
+ * html instead lets body stay transparent so the blobs render above it.
+ */
+html {
   background: var(--background);
+}
+
+body {
   color: var(--foreground);
   font-family: var(--font-sans, Arial, Helvetica, sans-serif);
+  position: relative;
+  min-height: 100vh;
+}
+
+/*
+ * Soft decorative blobs behind page content, inspired by Alwarid's
+ * landing page. Purely cosmetic: fixed, behind everything (z-index -1),
+ * blurred so they read as ambience rather than shapes competing with
+ * data. Dialed down opacity so they stay out of the way of dense
+ * clinical content on every page, not just a hero/landing screen.
+ */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  width: 32rem;
+  height: 32rem;
+  border-radius: 999px;
+  background: var(--blob);
+  opacity: 0.35;
+  filter: blur(60px);
+  pointer-events: none;
+}
+body::before {
+  top: -10rem;
+  left: -10rem;
+}
+body::after {
+  bottom: -12rem;
+  right: -10rem;
 }

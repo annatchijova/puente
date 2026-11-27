@@ -53,10 +53,10 @@ export default function OrderTracking({ patientId, uid, canManage, orders, readE
         <form onSubmit={create} className="flex flex-wrap items-end gap-2">
           <label className="flex flex-col gap-1">
             Order description
-            <input className="rounded-md border border-border bg-surface p-2" value={description} required maxLength={200}
+            <input className="rounded-lg border border-border bg-surface p-2" value={description} required maxLength={200}
               onChange={(event) => setDescription(event.target.value)} disabled={pending} />
           </label>
-          <button className="rounded-md bg-accent px-3 py-2 text-accent-foreground disabled:opacity-50" disabled={pending || !description.trim()}>
+          <button className="rounded-lg bg-accent px-3 py-2 text-accent-foreground disabled:opacity-50" disabled={pending || !description.trim()}>
             Request order
           </button>
         </form>

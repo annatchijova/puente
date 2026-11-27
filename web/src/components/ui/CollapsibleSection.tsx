@@ -9,7 +9,7 @@ export default function CollapsibleSection({
 }) {
   return (
     <details
-      className="rounded-md border border-border bg-surface text-sm"
+      className="rounded-lg border border-border bg-surface text-sm"
       open={defaultOpen}
     >
       <summary className="cursor-pointer select-none px-3 py-2 font-medium text-foreground">

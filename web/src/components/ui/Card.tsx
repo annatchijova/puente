@@ -10,7 +10,7 @@ export default function Card({
 } & React.HTMLAttributes<HTMLElement>) {
   return (
     <Tag
-      className={`rounded-md border border-border bg-surface p-4 shadow-sm ${className}`}
+      className={`rounded-lg border border-border bg-surface p-5 shadow-md ${className}`}
       {...rest}
     >
       {children}

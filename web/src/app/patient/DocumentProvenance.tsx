@@ -65,7 +65,7 @@ export default function DocumentProvenance({
           <p className="mb-1 font-medium">Per-claim source spans</p>
           <ul className="space-y-1">
             {translation.sentences.map((sentence, index) => (
-              <li key={index} className="rounded-md border border-border p-2">
+              <li key={index} className="rounded-lg border border-border p-2">
                 <p>{sentence.text}</p>
                 {sentence.unjustified ? (
                   <StatusBadge level="warning" label="Unjustified — no source span supports this claim" />

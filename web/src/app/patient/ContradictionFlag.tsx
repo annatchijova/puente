@@ -53,7 +53,7 @@ export default function ContradictionFlag({ patientId, uid, documents }: {
         <form onSubmit={flag} className="flex flex-wrap items-end gap-2 text-sm">
           <label className="flex flex-col gap-1">
             Document A
-            <select className="rounded-md border border-border bg-surface p-2" value={docA}
+            <select className="rounded-lg border border-border bg-surface p-2" value={docA}
               onChange={(e) => setDocA(e.target.value)} disabled={pending}>
               <option value="">Select a document</option>
               {documents.map((d) => <option key={d.id} value={d.id}>{d.id} — {d.kind}</option>)}
@@ -61,7 +61,7 @@ export default function ContradictionFlag({ patientId, uid, documents }: {
           </label>
           <label className="flex flex-col gap-1">
             Document B
-            <select className="rounded-md border border-border bg-surface p-2" value={docB}
+            <select className="rounded-lg border border-border bg-surface p-2" value={docB}
               onChange={(e) => setDocB(e.target.value)} disabled={pending}>
               <option value="">Select a document</option>
               {documents.map((d) => <option key={d.id} value={d.id}>{d.id} — {d.kind}</option>)}
@@ -69,10 +69,10 @@ export default function ContradictionFlag({ patientId, uid, documents }: {
           </label>
           <label className="flex flex-col gap-1">
             Note
-            <input className="rounded-md border border-border bg-surface p-2" value={note} required maxLength={300}
+            <input className="rounded-lg border border-border bg-surface p-2" value={note} required maxLength={300}
               onChange={(e) => setNote(e.target.value)} disabled={pending} />
           </label>
-          <button type="submit" className="rounded-md bg-accent px-3 py-2 text-accent-foreground disabled:opacity-50"
+          <button type="submit" className="rounded-lg bg-accent px-3 py-2 text-accent-foreground disabled:opacity-50"
             disabled={pending || !docA || !docB || docA === docB || !note.trim()}>
             Flag
           </button>

@@ -178,7 +178,7 @@ export default function TraceableDraft({ document, uid }: {
               ) : (
                 <button
                   type="button"
-                  className="rounded-md bg-accent px-3 py-2 text-accent-foreground disabled:opacity-50"
+                  className="rounded-lg bg-accent px-3 py-2 text-accent-foreground disabled:opacity-50"
                   disabled={saveState === "saving" || !draft.rawModality}
                   onClick={() => void saveToPatientRecord()}
                 >

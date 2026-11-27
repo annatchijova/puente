@@ -62,7 +62,7 @@ export default function PeerReview({
           <label className="flex flex-col gap-1">
             Request a second opinion from
             <select
-              className="rounded-md border border-border bg-surface p-2"
+              className="rounded-lg border border-border bg-surface p-2"
               value={assigneeId}
               onChange={(event) => setAssigneeId(event.target.value)}
               disabled={pending}
@@ -77,7 +77,7 @@ export default function PeerReview({
           </label>
           <button
             type="submit"
-            className="rounded-md bg-accent px-3 py-2 text-accent-foreground disabled:opacity-50"
+            className="rounded-lg bg-accent px-3 py-2 text-accent-foreground disabled:opacity-50"
             disabled={pending || !assigneeId}
           >
             Request
@@ -138,7 +138,7 @@ function ResponseForm({ onSubmit }: { onSubmit: (note: string) => Promise<void> 
       <label className="flex flex-col gap-1">
         Your opinion
         <textarea
-          className="rounded-md border border-border bg-surface p-2"
+          className="rounded-lg border border-border bg-surface p-2"
           value={note}
           required
           maxLength={2000}
@@ -148,7 +148,7 @@ function ResponseForm({ onSubmit }: { onSubmit: (note: string) => Promise<void> 
       </label>
       <button
         type="submit"
-        className="rounded-md bg-accent px-3 py-2 text-accent-foreground disabled:opacity-50"
+        className="rounded-lg bg-accent px-3 py-2 text-accent-foreground disabled:opacity-50"
         disabled={pending || !note.trim()}
       >
         Submit opinion
