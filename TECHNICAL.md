@@ -89,6 +89,21 @@ Level 1.
   rate limiting) has happened yet; this is tracked per level, not deferred
   to a single "hardening" pass at the end.
 
+## Running tests
+
+Firestore rules tests (authority boundaries, translation traceability, the
+Level 6.3 audit trail) run against the local Firestore emulator — they
+never touch the real `puente-hackathon-36b4a` project:
+
+```
+cd web
+npm run test:rules
+```
+
+Requires Java (for the emulator) and `firebase-tools` (installed as a dev
+dependency). `firebase.json` pins the emulator to port 8089 — 8080 is
+commonly held by other local services on this machine (open-webui).
+
 ## Repository tree
 
 ```

@@ -2,5 +2,10 @@
   "firestore": {
     "rules": "web/firestore.rules",
     "indexes": "web/firestore.indexes.json"
+  },
+  "emulators": {
+    "firestore": {
+      "port": 8089
+    }
   }
 }
