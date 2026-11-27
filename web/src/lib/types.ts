@@ -89,7 +89,9 @@ export type AuditEventType =
   | "order_advanced"
   | "translation_saved"
   | "review_requested"
-  | "review_responded";
+  | "review_responded"
+  | "contradiction_flagged"
+  | "contradiction_resolved";
 
 export interface AuditEvent {
   id: string;
@@ -101,4 +103,19 @@ export interface AuditEvent {
   at: string; // ISO, client-asserted; part of the hashed payload
   previousHash: string | null;
   entryHash: string;
+}
+
+// Level 6.1 documentary contradiction flagging (see docs/levels.md).
+// Manual only — no automated detection, per Level 6's ban on predictive
+// models in the decision path.
+export interface Contradiction {
+  id: string;
+  documentIds: [string, string];
+  note: string;
+  flaggedBy: string;
+  flaggedAt: string; // ISO timestamp, server-assigned
+  resolved: boolean;
+  resolvedBy: string | null;
+  resolvedAt: string | null; // ISO timestamp, server-assigned
+  resolutionNote: string | null;
 }

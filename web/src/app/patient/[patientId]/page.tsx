@@ -6,11 +6,13 @@ import { useAuth } from "@/lib/AuthProvider";
 import { useSharedRecord } from "@/lib/useSharedRecord";
 import { orderDeadline, useOrders } from "@/lib/orders";
 import { useTranslations } from "@/lib/translations";
+import { useContradictions } from "@/lib/contradictions";
 import { useNow } from "@/lib/useNow";
 import Card from "@/components/ui/Card";
 import StatusBadge from "@/components/ui/StatusBadge";
 import SpeechButton from "@/components/ui/SpeechButton";
 import AuditTrail from "../AuditTrail";
+import ContradictionFlag from "../ContradictionFlag";
 import OrderTracking from "../OrderTracking";
 import PeerReview from "../PeerReview";
 import TraceableDraft, { demoPatientId, demoDocumentId } from "../TraceableDraft";
@@ -31,6 +33,7 @@ function PatientRecord() {
     useSharedRecord(patientId);
   const { orders, error: ordersError } = useOrders(patientId);
   const { translations } = useTranslations(patientId);
+  const { contradictions } = useContradictions(patientId);
   const now = useNow();
 
   if (authLoading) return <main className="p-8">Loading…</main>;
@@ -50,6 +53,7 @@ function PatientRecord() {
     const deadline = orderDeadline(order);
     return deadline !== undefined && now > deadline;
   });
+  const unresolvedContradictions = (contradictions ?? []).filter((c) => !c.resolved);
 
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-8">
@@ -58,6 +62,9 @@ function PatientRecord() {
         <StatusBadge level="info" label={canManage ? "Professional view" : "Patient view"} />
         {overdueOrders.length > 0 && (
           <StatusBadge level="warning" label={`${overdueOrders.length} order${overdueOrders.length === 1 ? "" : "s"} overdue`} />
+        )}
+        {unresolvedContradictions.length > 0 && (
+          <StatusBadge level="warning" label={`${unresolvedContradictions.length} unresolved contradiction${unresolvedContradictions.length === 1 ? "" : "s"}`} />
         )}
       </header>
 
@@ -124,6 +131,12 @@ function PatientRecord() {
           readError={ordersError}
         />
       </Card>
+
+      {canManage && (
+        <Card as="section">
+          <ContradictionFlag patientId={patientId} uid={user.uid} documents={documents} />
+        </Card>
+      )}
 
       {canManage && (
         <Card as="section">

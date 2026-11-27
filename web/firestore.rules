@@ -167,6 +167,36 @@ service cloud.firestore {
                ['seq', 'type', 'actor', 'objectId', 'summary', 'at', 'previousHash', 'entryHash', 'recordedAt']);
         allow update, delete: if false; // append-only
       }
+
+      // Level 6.1 documentary contradiction flagging (see docs/levels.md).
+      // Manual only — no automated detection is implied or enforced here.
+      match /contradictions/{contradictionId} {
+        allow read: if isTreatingProfessional(patientId);
+        allow create: if isTreatingProfessional(patientId)
+          && request.resource.data.flaggedBy == request.auth.uid
+          && request.resource.data.documentIds.size() == 2
+          && request.resource.data.documentIds[0] != request.resource.data.documentIds[1]
+          && exists(/databases/$(database)/documents/patients/$(patientId)/documents/$(request.resource.data.documentIds[0]))
+          && exists(/databases/$(database)/documents/patients/$(patientId)/documents/$(request.resource.data.documentIds[1]))
+          && request.resource.data.resolved == false
+          && request.resource.data.resolvedBy == null
+          && request.resource.data.resolvedAt == null
+          && request.resource.data.resolutionNote == null
+          && request.resource.data.flaggedAt == request.time
+          && request.resource.data.keys().hasOnly(
+               ['documentIds', 'note', 'flaggedBy', 'flaggedAt', 'resolved', 'resolvedBy', 'resolvedAt', 'resolutionNote']);
+        // a contradiction can be resolved exactly once, and nothing else
+        // about it may change — it is never re-opened or re-edited.
+        allow update: if isTreatingProfessional(patientId)
+          && resource.data.resolved == false
+          && request.resource.data.resolved == true
+          && request.resource.data.resolvedBy == request.auth.uid
+          && request.resource.data.resolvedAt == request.time
+          && request.resource.data.resolutionNote is string
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(
+               ['resolved', 'resolvedBy', 'resolvedAt', 'resolutionNote']);
+        allow delete: if false;
+      }
     }
   }
 }

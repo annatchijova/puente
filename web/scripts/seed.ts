@@ -82,8 +82,28 @@ async function main() {
     sha256,
   });
 
+  // A second fictional result, deliberately in tension with the first —
+  // anemia is suspected above, but the follow-up iron studies come back
+  // normal. This is exactly the kind of documentary tension Level 6.1's
+  // contradiction-flagging feature exists to surface, not resolve.
+  const ironDocId = "doc-iron-001";
+  const ironContent =
+    "Iron panel: ferritin 180 ng/mL, transferrin saturation 35%. Iron stores within normal range.";
+  const ironCreatedAt = now;
+  const ironSha256 = seal({ kind: "result", authorId, createdAt: ironCreatedAt, content: ironContent });
+
+  await db.doc(`patients/${patientId}/documents/${ironDocId}`).set({
+    id: ironDocId,
+    kind: "result",
+    authorId,
+    createdAt: ironCreatedAt,
+    content: ironContent,
+    sha256: ironSha256,
+  });
+
   console.log("Seeded patient:", patientId);
   console.log("Seeded document:", docId, "sha256:", sha256);
+  console.log("Seeded document:", ironDocId, "sha256:", ironSha256);
   console.log("Treating professionals:", [cardiologist.id, neurologist.id, clinician.id]);
 }
 
