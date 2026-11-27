@@ -13,10 +13,12 @@ import StatusBadge from "@/components/ui/StatusBadge";
 import SpeechButton from "@/components/ui/SpeechButton";
 import AuditTrail from "../AuditTrail";
 import ContradictionFlag from "../ContradictionFlag";
+import DocumentProvenance from "../DocumentProvenance";
 import OrderTracking from "../OrderTracking";
 import PeerReview from "../PeerReview";
 import TraceableDraft, { demoPatientId, demoDocumentId } from "../TraceableDraft";
 import TranslationView from "../TranslationView";
+import { useReviewRequests } from "@/lib/reviews";
 
 export default function PatientRecordPage() {
   return (
@@ -34,6 +36,7 @@ function PatientRecord() {
   const { orders, error: ordersError } = useOrders(patientId);
   const { translations } = useTranslations(patientId);
   const { contradictions } = useContradictions(patientId);
+  const { requests: reviewRequests } = useReviewRequests(patientId);
   const now = useNow();
 
   if (authLoading) return <main className="p-8">Loading…</main>;
@@ -102,7 +105,18 @@ function PatientRecord() {
                 <SpeechButton text={doc.content} label="Listen to original" />
               </div>
               {translations?.find((t) => t.documentId === doc.id) && (
-                <TranslationView translation={translations.find((t) => t.documentId === doc.id)!} />
+                <>
+                  <TranslationView translation={translations.find((t) => t.documentId === doc.id)!} />
+                  {canManage && (
+                    <DocumentProvenance
+                      document={doc}
+                      translation={translations.find((t) => t.documentId === doc.id)!}
+                      reviewRequests={reviewRequests ?? []}
+                      contradictions={contradictions ?? []}
+                      treatingProfessionals={treatingProfessionals}
+                    />
+                  )}
+                </>
               )}
               {patientId === demoPatientId && doc.id === demoDocumentId && canManage && (
                 <TraceableDraft key={`${user.uid}:${doc.sha256}`} uid={user.uid} document={doc} />
