@@ -117,6 +117,18 @@ cp .env.local.example .env.local   # fill in your own Firebase project config
 npm run dev
 ```
 
+## A note on where this stands
+
+This has only ever been exercised against fictional patients, professionals,
+and documents — never real clinical data, and never a real hospital's
+workflow. Levels 1 through 6 work and are tested, but "works in this demo"
+and "ready for an actual clinic" are different claims; see
+[`TECHNICAL.md`](TECHNICAL.md#known-limitations--non-goals-current-state)
+for what hasn't been done yet (a dedicated security/secrets review, broader
+adversarial testing of the translation's source-span attribution, real
+multi-institution use). There is real work ahead before this could handle
+real patients.
+
 ## License
 
 Apache License 2.0 — see [`LICENSE`](LICENSE).

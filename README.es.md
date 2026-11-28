@@ -120,6 +120,18 @@ cp .env.local.example .env.local   # completar con tu propio proyecto de Firebas
 npm run dev
 ```
 
+## Una nota sobre en qué estado está esto
+
+Esto solo se probó con pacientes, profesionales y documentos ficticios —
+nunca con datos clínicos reales, ni con el flujo real de un hospital. Los
+niveles 1 a 6 funcionan y tienen tests, pero "funciona en esta demo" y
+"listo para una clínica real" son afirmaciones distintas; ver
+[`TECHNICAL.md`](TECHNICAL.md#known-limitations--non-goals-current-state)
+para lo que todavía falta (una revisión dedicada de seguridad/secretos,
+testing adversarial más amplio de la atribución por span de la traducción,
+uso real multi-institucional). Queda trabajo real por delante antes de que
+esto pueda manejar pacientes reales.
+
 ## Licencia
 
 Apache License 2.0 — ver [`LICENSE`](LICENSE).
