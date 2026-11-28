@@ -15,6 +15,7 @@ import TopBar from "@/components/ui/TopBar";
 import AuditTrail from "../AuditTrail";
 import ContradictionFlag from "../ContradictionFlag";
 import DocumentProvenance from "../DocumentProvenance";
+import DocumentUpload from "../DocumentUpload";
 import OrderTracking from "../OrderTracking";
 import PeerReview from "../PeerReview";
 import TraceableDraft, { demoPatientId, demoDocumentId } from "../TraceableDraft";
@@ -90,6 +91,11 @@ function PatientRecord() {
 
         <Card as="section">
           <h2 className="mb-2 font-medium">Documents</h2>
+          {canManage && (
+            <div className="mb-3">
+              <DocumentUpload patientId={patientId} uid={user.uid} />
+            </div>
+          )}
           {loading && <p role="status">Loading…</p>}
           {error && (
             <p role="alert" className="text-sm">

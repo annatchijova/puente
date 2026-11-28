@@ -31,7 +31,9 @@ it does not produce the artifact.
 - `patients/{id}` — fictional patient record.
 - `patients/{id}/documents/{docId}` — an order, result, or report. Carries
   `authorId`, `createdAt`, and a SHA-256 hash of its canonical content,
-  sealed at write time.
+  sealed at write time. Entered by a treating professional via
+  `DocumentUpload.tsx` / `lib/documents.ts` — a patient can never author
+  one (enforced by `firestore.rules`, not just the UI).
 - `patients/{id}/translations/{docId}` — generated explanation(s) for a
   document, each sentence carrying a reference to the source span it was
   derived from, or an explicit `unjustified: true` flag when no span

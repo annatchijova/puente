@@ -101,6 +101,24 @@ describe("Permissions — Level 1 authority model", () => {
     );
   });
 
+  it("lets a treating professional seal a new document — the DocumentUpload.tsx path", async () => {
+    await assertSucceeds(
+      asProfessional().doc(`patients/${PATIENT_A}/documents/doc-new-001`).set({
+        id: "doc-new-001", kind: "result", authorId: DOC_PROFESSIONAL,
+        createdAt: "2026-01-01T00:00:00Z", content: "Lipid panel: LDL 142 mg/dL.", sha256: "c".repeat(64),
+      }),
+    );
+  });
+
+  it("denies a professional sealing a document under someone else's authorship", async () => {
+    await assertFails(
+      asProfessional().doc(`patients/${PATIENT_A}/documents/doc-spoofed-001`).set({
+        id: "doc-spoofed-001", kind: "result", authorId: OTHER_PROFESSIONAL,
+        createdAt: "2026-01-01T00:00:00Z", content: "x", sha256: "d".repeat(64),
+      }),
+    );
+  });
+
   it("denies reviewRequests reads to the patient — unlike the generic /reviews path, second opinions stay within the treating team", async () => {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await context.firestore().doc(`patients/${PATIENT_A}/reviewRequests/req-1`).set({

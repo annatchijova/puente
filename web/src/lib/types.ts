@@ -85,6 +85,7 @@ export interface ReviewResponse {
 // chain is verified by lib/audit.ts's verifyChain, not by Firestore rules
 // (no hash primitive in the rules language — see firestore.rules).
 export type AuditEventType =
+  | "document_sealed"
   | "order_requested"
   | "order_advanced"
   | "translation_saved"
