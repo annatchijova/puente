@@ -7,11 +7,25 @@ import { auth } from "@/lib/firebase";
 import Card from "@/components/ui/Card";
 import StatusBadge from "@/components/ui/StatusBadge";
 
+const DEMO_PASSWORD = "puente-demo-2026";
+const DEMO_ACCOUNTS = [
+  { email: "cardiologist@puente.demo", role: "Professional — Cardiology" },
+  { email: "neurologist@puente.demo", role: "Professional — Neurology" },
+  { email: "clinician@puente.demo", role: "Professional — Internal Medicine" },
+  { email: "patient@puente.demo", role: "Patient" },
+];
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  function fillDemoAccount(demoEmail: string) {
+    setEmail(demoEmail);
+    setPassword(DEMO_PASSWORD);
+    setError(null);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -56,6 +70,26 @@ export default function LoginPage() {
             Sign in
           </button>
         </form>
+
+        <div className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
+          <p className="text-foreground/70">
+            Demo accounts — password <code className="rounded bg-background px-1 py-0.5">{DEMO_PASSWORD}</code> for all:
+          </p>
+          <ul className="space-y-1">
+            {DEMO_ACCOUNTS.map((account) => (
+              <li key={account.email}>
+                <button
+                  type="button"
+                  onClick={() => fillDemoAccount(account.email)}
+                  className="text-left text-accent underline"
+                >
+                  {account.email}
+                </button>
+                <span className="text-foreground/60"> — {account.role}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </Card>
     </main>
   );
