@@ -40,14 +40,28 @@ Candidates surfaced:
   and a single static binary.
 
 Chosen: **TypeScript end-to-end** — Next.js (App Router) for the frontend,
-Firebase Functions 2nd gen (Node.js/TypeScript) for backend logic, Firestore
-for the document store, Firebase AI Logic Web SDK for hybrid inference.
+Firestore for the document store, Firebase AI Logic Web SDK for hybrid
+inference.
 
-Why: the client-side force is non-negotiable (hybrid inference = Chrome
-Built-in AI = JS/TS), and no force identified for the backend is strong
-enough to justify opening a second language boundary under a 10-day window.
-Firestore already serves as the shared interface; a second language would add
-a toolchain and a deploy target without removing any actual coupling.
+Update: the as-built system has no Cloud Functions at all, not even
+Node.js/TypeScript ones — every write goes directly from the client SDK to
+Firestore, authorized by `firestore.rules` (see TECHNICAL.md's Authority
+model and Data model sections). The "Firebase Functions 2nd gen" line in
+the original decision below was the plan going in; it turned out nothing
+in Levels 1-6 actually needed a trusted-server step that Firestore rules
+couldn't express (document sealing happens client-side before write, and
+the rules verify the shape/hash, not a server recomputing it) — so the
+second toolchain this decision already argued against opening never got
+opened for backend logic either. Seed scripts (`web/scripts/`) use the
+Admin SDK for one-off fictional-data writes outside the deployed app, not
+a runtime backend.
+
+Why TypeScript end-to-end: the client-side force is non-negotiable (hybrid
+inference = Chrome Built-in AI = JS/TS), and no force identified for a
+backend was strong enough to justify opening a second language boundary
+under a 10-day window. Firestore already serves as the shared interface; a
+second language would add a toolchain and a deploy target without removing
+any actual coupling.
 
 Guarantees we're relying on:
 - Compile-time type checking across client/server — provided by TypeScript's

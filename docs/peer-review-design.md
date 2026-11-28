@@ -15,9 +15,12 @@ coexist, including opinions that disagree.
 
 ## Authorization and provenance
 
-- Keep requests and unreviewed responses within the treating team. The current
-  generic reviews rule also permits patient reads and does not enforce assignment.
-  Use a separate path and explicit rules for the new workflow.
+- Keep requests and unreviewed responses within the treating team. A generic
+  `reviews` rule existed at design time that also permitted patient reads and
+  did not enforce assignment — wrong for this workflow, so it got its own
+  `reviewRequests` path and explicit rules instead. (That generic path was
+  later found to be dead code — nothing ever wrote or read it — and removed
+  from `firestore.rules` entirely on 2026-11-27.)
 - Check current requester and assignee membership when the request is created.
   At submission, check the assigned identity and current membership. Use
   server timestamps and prevent edits and deletes through the client.
