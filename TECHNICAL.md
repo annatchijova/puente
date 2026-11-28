@@ -88,16 +88,17 @@ Level 1.
 - The on-device/cloud routing decision for hybrid inference is made by the
   Firebase AI Logic SDK itself; PUENTE does not currently second-guess or
   override that routing.
-- Firebase App Check enforcement for `firebaseml.googleapis.com` is
-  **unenforced** on this project. It defaulted to enforced when the Gemini
-  Developer API was enabled, but the client never calls
-  `initializeAppCheck()` — every cloud-path request failed with
-  `401 UNAUTHENTICATED: Firebase App Check token is invalid` until this was
-  found and disabled (2026-11-27). This was invisible during normal
-  development because on-device inference never calls that endpoint at
-  all; only forcing `InferenceMode.ONLY_IN_CLOUD` surfaced it. Proper fix
-  for a non-demo deployment: register a reCAPTCHA v3/Enterprise provider
-  and call `initializeAppCheck()` client-side, then re-enforce.
+- Firebase App Check is enforced on `firebaseml.googleapis.com`, satisfied
+  with a **debug token** (`NEXT_PUBLIC_FIREBASE_APPCHECK_DEBUG_TOKEN` in
+  `lib/firebase.ts`, registered under Firebase Console → App Check → this
+  app → debug tokens) rather than a production attestation provider like
+  reCAPTCHA — the Firebase Hybrid AI Hackathon rules explicitly accept
+  debug tokens in submissions. This was found broken (every cloud-path
+  request failed with `401 UNAUTHENTICATED: Firebase App Check token is
+  invalid`, invisible during normal development because on-device
+  inference never calls that endpoint at all) and fixed on 2026-11-28.
+  Proper fix for a non-demo deployment: register a reCAPTCHA v3/Enterprise
+  provider instead of relying on a debug token.
 - Span-level source attribution for generated translations depends on the
   model's output including a locatable quote or offset; this has not yet
   been adversarially tested against adversarial or malformed source
