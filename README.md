@@ -65,9 +65,9 @@ It is never auto-promoted into a diagnosis or a confirmed finding.
 ## How it works, briefly
 
 - **Firebase AI Logic hybrid inference** generates the translation: Gemini
-  Nano running on-device in Chrome when available, falling back to Vertex
-  AI in the cloud otherwise — the same feature either way, demonstrating
-  both paths rather than only the cloud one.
+  Nano running on-device in Chrome when available, falling back to the
+  Gemini Developer API in the cloud otherwise — the same feature either
+  way, demonstrating both paths rather than only the cloud one.
 - Every document is sealed at write time (hashed, authored, timestamped) in
   **Firestore**, so a generated sentence can always be traced back to it.
 - Role-based access means a professional currently treating the patient can
@@ -94,8 +94,12 @@ puente/
 
 ## Status
 
-Early build, scaffold stage (see [`docs/levels.md`](docs/levels.md) for
-which level is live). Data used anywhere in this repo is fictional.
+Levels 1 through 6 are built and verified end-to-end — shared record with
+provenance, traceable translation, order tracking, peer review, patient
+view and accessibility, and clinical observability (documentary
+contradiction flagging, an explainability/provenance panel, and a
+tamper-evident audit trail). See [`docs/levels.md`](docs/levels.md) for
+what each level adds. Data used anywhere in this repo is fictional.
 
 ## Try it
 

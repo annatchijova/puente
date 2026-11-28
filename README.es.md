@@ -96,9 +96,13 @@ puente/
 
 ## Estado
 
-Construcción temprana, etapa de scaffold (ver [`docs/levels.md`](docs/levels.md)
-para saber qué nivel está activo). Los datos usados en este repositorio son
-ficticios.
+Los niveles 1 a 6 están construidos y verificados de punta a punta:
+expediente compartido con proveniencia, traducción trazable, seguimiento de
+órdenes, segunda opinión entre pares, vista del paciente con accesibilidad,
+y observabilidad clínica (marcado de contradicciones documentales, un panel
+de explicabilidad/proveniencia, y un registro de auditoría a prueba de
+manipulación). Ver [`docs/levels.md`](docs/levels.md) para el detalle de
+cada nivel. Los datos usados en este repositorio son ficticios.
 
 ## Probarlo
 

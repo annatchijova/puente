@@ -38,9 +38,19 @@ it does not produce the artifact.
   supports it.
 - `patients/{id}/orders/{orderId}` — state machine: `requested` →
   `scheduled` → `performed` → `result_received` → `result_reviewed`.
-- `patients/{id}/reviews/{reviewId}` — a peer opinion attached to a
-  specific document, with its own `authorId`/`createdAt`. Never overwrites
-  the original interpretation.
+- `patients/{id}/reviewRequests/{requestId}` (+ nested `response/only`) —
+  Level 4 peer review: a second opinion requested from a named colleague
+  on a specific document, with its own `authorId`/`createdAt`. Never
+  overwrites the original interpretation; patient reads are denied
+  outright.
+- `patients/{id}/contradictions/{contradictionId}` — Level 6.1: a
+  professional manually flags two documents as contradictory; resolved
+  exactly once, never reopened or edited further. No automated detection.
+- `patients/{id}/auditLog/_head` + `patients/{id}/auditLog/{entryId}` —
+  Level 6.3: append-only, hash-chained audit trail (`seq` strictly
+  increasing from 0, each entry's hash covering the previous entry's
+  hash). Verified independently by `lib/audit.ts`'s `verifyChain`, not by
+  the Firestore rules themselves.
 
 ## Authority model
 
@@ -85,9 +95,11 @@ Level 1.
 - No real patient data exists or is used anywhere in this repository. All
   identifiers, values, and documents are fictional, generated for the
   hackathon demo.
-- No production security review (secrets management, Firestore rules audit,
-  rate limiting) has happened yet; this is tracked per level, not deferred
-  to a single "hardening" pass at the end.
+- Firestore rules have automated test coverage for permissions,
+  translation traceability, and the audit trail (`npm run test:rules`,
+  see "Running tests" below), but secrets management and rate limiting
+  have not had a dedicated review; this is tracked per level, not
+  deferred to a single "hardening" pass at the end.
 
 ## Running tests
 
@@ -111,6 +123,7 @@ puente/
 ├── web/
 │   ├── src/app/           # Next.js App Router pages
 │   ├── src/lib/firebase.ts  # Firebase client init (env-driven, no secrets committed)
+│   ├── tests/             # Firestore rules test suite (npm run test:rules)
 │   └── .env.local.example   # required Firebase project variables
 ├── docs/
 │   ├── language-decision.md  # full language decision record

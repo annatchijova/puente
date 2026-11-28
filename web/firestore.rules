@@ -101,17 +101,11 @@ service cloud.firestore {
         allow delete: if false;
       }
 
-      match /reviews/{reviewId} {
-        allow read: if isTreatingProfessional(patientId) || isPatientSelf(patientId);
-        allow create: if isTreatingProfessional(patientId)
-          && request.resource.data.authorId == request.auth.uid;
-        allow update, delete: if false; // a review is preserved, never overwritten
-      }
-
-      // Level 4 peer review (see docs/peer-review-design.md). Kept separate
-      // from /reviews above: that generic path permits patient reads and
-      // does not enforce assignment, both wrong for this workflow — a
-      // second-opinion request and its response stay within the treating
+      // Level 4 peer review (see docs/peer-review-design.md). An earlier,
+      // more generic /reviews path (patient-readable, no assignment check)
+      // was removed as dead rules — nothing in the app ever wrote or read
+      // it, and permissive-but-unused rules are attack surface for no
+      // benefit. A second-opinion request and its response stay within the treating
       // team only.
       match /reviewRequests/{requestId} {
         function sealedDigestMatches(data) {
