@@ -20,12 +20,20 @@ export default function Home() {
       ) : user ? (
         <Card className="flex flex-col items-center gap-3">
           <StatusBadge level="stable" label={`Signed in as ${user.email}`} />
-          <Link
-            className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground"
-            href="/patient/patient-demo-001"
-          >
-            Open demo patient record
-          </Link>
+          <div className="flex flex-col items-center gap-2">
+            <Link
+              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground"
+              href="/patient/patient-demo-001"
+            >
+              Demo case 1 — documentary contradiction
+            </Link>
+            <Link
+              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground"
+              href="/patient/patient-demo-002"
+            >
+              Demo case 2 — order tracking + second opinion
+            </Link>
+          </div>
           <button onClick={() => signOutUser()} className="text-sm text-foreground/60 underline">
             Sign out
           </button>

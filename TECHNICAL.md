@@ -121,9 +121,21 @@ Fictional, Spark-plan email/password accounts, all with password
 | `cardiologist@puente.demo` | Treating professional (Cardiology) |
 | `neurologist@puente.demo` | Treating professional (Neurology) |
 | `clinician@puente.demo` | Treating professional (Internal Medicine) |
-| `patient@puente.demo` | The patient (`patient-demo-001`) |
+| `patient@puente.demo` | The patient for demo case 1 (`patient-demo-001`) |
+| `patient2@puente.demo` | The patient for demo case 2 (`patient-demo-002`) |
 
-After signing in, open `/patient/patient-demo-001` (the demo patient record).
+The three professional accounts treat both demo patients. After signing in,
+the home page links to both:
+
+- **`patient-demo-001`** — two results in documentary tension (hemoglobin
+  low, but the follow-up iron panel is normal): exercises Level 6.1
+  contradiction flagging (unresolved), an on-device-generated translation,
+  and an open second-opinion request.
+- **`patient-demo-002`** — an order (chest X-ray) and its report: exercises
+  a different document kind pairing, a translation seeded with `cloud`
+  modality (the other half of the on-device/cloud hybrid pair), an order
+  left in `requested` past its demo deadline (the overdue-order warning
+  badge), and an already-answered second opinion.
 
 ## Deployment
 

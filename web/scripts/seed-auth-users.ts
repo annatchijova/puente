@@ -23,6 +23,7 @@ const users = [
   { uid: "prof-neuro-001", email: "neurologist@puente.demo", displayName: "Dr. Lucas Ferreyra" },
   { uid: "prof-clinic-001", email: "clinician@puente.demo", displayName: "Dr. Sofía Gómez" },
   { uid: "patient-demo-001", email: "patient@puente.demo", displayName: "Patient Demo One" },
+  { uid: "patient-demo-002", email: "patient2@puente.demo", displayName: "Patient Demo Two" },
 ];
 
 async function main() {

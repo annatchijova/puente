@@ -12,7 +12,8 @@ const DEMO_ACCOUNTS = [
   { email: "cardiologist@puente.demo", role: "Professional — Cardiology" },
   { email: "neurologist@puente.demo", role: "Professional — Neurology" },
   { email: "clinician@puente.demo", role: "Professional — Internal Medicine" },
-  { email: "patient@puente.demo", role: "Patient" },
+  { email: "patient@puente.demo", role: "Patient (demo case 1)" },
+  { email: "patient2@puente.demo", role: "Patient (demo case 2)" },
 ];
 
 export default function LoginPage() {
