@@ -103,6 +103,13 @@ what each level adds. Data used anywhere in this repo is fictional.
 
 ## Try it
 
+**Live demo:** [puente-pi-mauve.vercel.app](https://puente-pi-mauve.vercel.app) —
+sign in with one of the fictional demo accounts in
+[`TECHNICAL.md`](TECHNICAL.md#demo-accounts) (no real patient data,
+Firebase project on the free Spark plan).
+
+To run it yourself:
+
 ```bash
 cd web
 npm install

@@ -106,6 +106,13 @@ cada nivel. Los datos usados en este repositorio son ficticios.
 
 ## Probarlo
 
+**Demo en vivo:** [puente-pi-mauve.vercel.app](https://puente-pi-mauve.vercel.app) —
+iniciá sesión con una de las cuentas ficticias de demo en
+[`TECHNICAL.md`](TECHNICAL.md#demo-accounts) (sin datos reales de pacientes,
+proyecto de Firebase en el plan gratuito Spark).
+
+Para correrlo vos misma:
+
 ```bash
 cd web
 npm install

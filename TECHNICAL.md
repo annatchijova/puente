@@ -88,6 +88,16 @@ Level 1.
 - The on-device/cloud routing decision for hybrid inference is made by the
   Firebase AI Logic SDK itself; PUENTE does not currently second-guess or
   override that routing.
+- Firebase App Check enforcement for `firebaseml.googleapis.com` is
+  **unenforced** on this project. It defaulted to enforced when the Gemini
+  Developer API was enabled, but the client never calls
+  `initializeAppCheck()` — every cloud-path request failed with
+  `401 UNAUTHENTICATED: Firebase App Check token is invalid` until this was
+  found and disabled (2026-11-27). This was invisible during normal
+  development because on-device inference never calls that endpoint at
+  all; only forcing `InferenceMode.ONLY_IN_CLOUD` surfaced it. Proper fix
+  for a non-demo deployment: register a reCAPTCHA v3/Enterprise provider
+  and call `initializeAppCheck()` client-side, then re-enforce.
 - Span-level source attribution for generated translations depends on the
   model's output including a locatable quote or offset; this has not yet
   been adversarially tested against adversarial or malformed source
@@ -100,6 +110,35 @@ Level 1.
   see "Running tests" below), but secrets management and rate limiting
   have not had a dedicated review; this is tracked per level, not
   deferred to a single "hardening" pass at the end.
+
+## Demo accounts
+
+Fictional, Spark-plan email/password accounts, all with password
+`puente-demo-2026`:
+
+| Email | Role |
+|---|---|
+| `cardiologist@puente.demo` | Treating professional (Cardiology) |
+| `neurologist@puente.demo` | Treating professional (Neurology) |
+| `clinician@puente.demo` | Treating professional (Internal Medicine) |
+| `patient@puente.demo` | The patient (`patient-demo-001`) |
+
+After signing in, open `/patient/patient-demo-001` (the demo patient record).
+
+## Deployment
+
+The live demo is deployed on **Vercel** (`vercel --prod` from `web/`, or
+automatically on push to `main` via the connected GitHub integration),
+reading `NEXT_PUBLIC_FIREBASE_*` as public Config-type environment
+variables — these are Firebase's public web-app identifiers, not secrets;
+access control is enforced by Firestore rules and Auth, not by hiding
+them. Firebase itself (Firestore, Auth, AI Logic) stays on the Spark
+(free) plan; only the Next.js frontend is hosted on Vercel; Firebase App
+Hosting was considered first but requires the paid Blaze plan.
+`web/.npmrc` sets `legacy-peer-deps=true` — required for `npm install` to
+resolve `@firebase/rules-unit-testing` and `vitest`'s peer dependencies
+against `firebase@13`; without it, both local installs and Vercel's build
+fail.
 
 ## Running tests
 
